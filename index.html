@@ -264,20 +264,6 @@
   }
   .error-text.show{display:block;}
 
-  .debug-line{
-    display:none;
-    margin-top:10px;
-    padding:10px 12px;
-    background:#f3f4f6;
-    border-radius:10px;
-    font-size:12px;
-    color:#374151;
-    word-break:break-all;
-    line-height:1.5;
-  }
-  .debug-line.show{display:block;}
-  .debug-line a{color:var(--blue-bright); font-weight:600;}
-
   @media (max-width: 400px){
     .card{padding:22px 18px 18px;}
   }
@@ -332,7 +318,6 @@
     </div>
 
     <div class="error-text" id="errorText">Enter a reference number or a customer ID to continue.</div>
-    <div class="debug-line" id="debugLine"></div>
 
     <button type="submit" class="submit-btn">
       Check My Bill
@@ -460,32 +445,6 @@
     custInput.value = custInput.value.replace(/[^0-9]/g, "").slice(0, 10);
   });
 
-  var debugLine = document.getElementById("debugLine");
-  function showDebugLink(url){
-    debugLine.innerHTML = "Redirecting to:<br><a href=\"" + url + "\" target=\"_top\" rel=\"noopener\">" + url + "</a>";
-    debugLine.classList.add("show");
-    // Auto-follow shortly after, so normal use still feels like one click —
-    // but the link above stays as proof of the exact URL that was sent,
-    // and as a manual fallback if auto-navigation is blocked.
-    setTimeout(function(){ navigateTop(url); }, 400);
-  }
-
-  function navigateTop(url){
-    // The tool may run inside an iframe (e.g. published artifact preview).
-    // Some destination sites detect that and loop trying to bust out of the
-    // frame, causing ERR_TOO_MANY_REDIRECTS. Navigating window.top instead
-    // of window sends the browser tab itself, not just the iframe.
-    try{
-      if(window.top && window.top !== window){
-        window.top.location.href = url;
-        return;
-      }
-    }catch(e){
-      // Cross-origin access to window.top can throw; fall through.
-    }
-    window.location.href = url;
-  }
-
   form.addEventListener("submit", function(ev){
     ev.preventDefault();
     errorText.classList.remove("show");
@@ -495,12 +454,24 @@
 
     if(ref){
       addRecent(ref);
-      showDebugLink(REF_URL + encodeURIComponent(ref));
+      var link = document.createElement("a");
+      link.href = "https://bill.pitc.com.pk/gbill.aspx?refno="+ref;
+      link.target = "_blank";
+      link.rel = "noopener";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       return;
     }
 
     if(cust){
-      showDebugLink(CUSTOMER_FORM_URL);
+      var link2 = document.createElement("a");
+      link2.href = "https://bill.pitc.com.pk/";
+      link2.target = "_blank";
+      link2.rel = "noopener";
+      document.body.appendChild(link2);
+      link2.click();
+      document.body.removeChild(link2);
       return;
     }
 
